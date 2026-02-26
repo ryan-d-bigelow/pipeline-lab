@@ -1,0 +1,26 @@
+name: "chain"
+description: "Chained pipeline: input → transform → LLM → DB"
+steps:
+  - id: "format_input"
+    type: "transform"
+    config:
+      operation: "format_string"
+      template: "Please analyze the following text:\n\n{user_input}"
+      input_keys: ["user_input"]
+      output_key: "formatted_prompt"
+
+  - id: "call_llm"
+    type: "llm"
+    depends_on: ["format_input"]
+    config:
+      model: "gpt-4o-mini"
+      system_prompt: "You are an expert text analyst."
+      input_key: "formatted_prompt"
+      output_key: "analysis"
+
+  - id: "save_result"
+    type: "db"
+    depends_on: ["call_llm"]
+    config:
+      table: "analyses"
+      data_keys: ["analysis"]

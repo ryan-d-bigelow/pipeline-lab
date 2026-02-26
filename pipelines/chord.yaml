@@ -1,0 +1,25 @@
+name: "chord"
+description: "Parallel chord: input → [summary, sentiment] → merge → DB"
+steps:
+  - id: "llm_summary"
+    type: "llm"
+    config:
+      model: "gpt-4o-mini"
+      system_prompt: "Summarize the following text in 2-3 sentences."
+      input_key: "user_input"
+      output_key: "summary"
+
+  - id: "llm_sentiment"
+    type: "llm"
+    config:
+      model: "gpt-4o-mini"
+      system_prompt: "Analyze the sentiment of the following text. Reply with: positive, negative, or neutral, followed by a brief explanation."
+      input_key: "user_input"
+      output_key: "sentiment"
+
+  - id: "save_result"
+    type: "db"
+    depends_on: ["llm_summary", "llm_sentiment"]
+    config:
+      table: "chord_results"
+      data_keys: ["summary", "sentiment"]

@@ -1,0 +1,17 @@
+name: "simple-llm"
+description: "Single LLM call pipeline: input → LLM → DB"
+steps:
+  - id: "call_llm"
+    type: "llm"
+    config:
+      model: "gpt-4o-mini"
+      system_prompt: "You are a helpful assistant."
+      input_key: "user_input"
+      output_key: "llm_response"
+
+  - id: "save_result"
+    type: "db"
+    depends_on: ["call_llm"]
+    config:
+      table: "results"
+      data_keys: ["llm_response"]
