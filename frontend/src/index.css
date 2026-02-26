@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-900 text-slate-100 font-sans m-0;
+  }
+
+  #root {
+    @apply h-screen w-screen overflow-hidden;
+  }
+}
+
+/* React Flow overrides for dark theme */
+.react-flow__background {
+  background-color: transparent !important;
+}
+
+.react-flow__controls button {
+  @apply bg-slate-700 border-slate-600 text-slate-300;
+}
+
+.react-flow__controls button:hover {
+  @apply bg-slate-600;
+}
+
+.react-flow__controls button svg {
+  fill: currentColor;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* Pulse animation for running nodes */
+@keyframes node-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+}
+
+.node-running {
+  animation: node-pulse 2s ease-in-out infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-500;
+}

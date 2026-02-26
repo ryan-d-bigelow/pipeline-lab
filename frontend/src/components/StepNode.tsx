@@ -1,17 +1,28 @@
+import { memo } from "react";
+import { Handle, Position } from "@xyflow/react";
+import type { NodeProps, Node } from "@xyflow/react";
 import type { StepConfig, StepStatus } from "../types";
 
-interface StepNodeProps {
+export interface StepNodeData extends Record<string, unknown> {
   step: StepConfig;
   status: StepStatus;
-  x: number;
-  y: number;
+  label: string;
 }
 
-const STATUS_COLORS: Record<StepStatus, { border: string; bg: string }> = {
-  idle: { border: "#6b7280", bg: "#f3f4f6" },
-  running: { border: "#3b82f6", bg: "#eff6ff" },
-  complete: { border: "#22c55e", bg: "#f0fdf4" },
-  failed: { border: "#ef4444", bg: "#fef2f2" },
+type StepNodeType = Node<StepNodeData, "stepNode">;
+
+const TYPE_COLORS: Record<string, { bg: string; badge: string; text: string }> = {
+  llm: { bg: "bg-blue-950", badge: "bg-blue-600", text: "text-blue-300" },
+  transform: { bg: "bg-purple-950", badge: "bg-purple-600", text: "text-purple-300" },
+  db: { bg: "bg-emerald-950", badge: "bg-emerald-600", text: "text-emerald-300" },
+  http: { bg: "bg-orange-950", badge: "bg-orange-600", text: "text-orange-300" },
+};
+
+const STATUS_BORDER: Record<StepStatus, string> = {
+  idle: "border-slate-600",
+  running: "border-blue-500",
+  complete: "border-emerald-500",
+  failed: "border-red-500",
 };
 
 const STATUS_ICON: Record<StepStatus, string> = {
@@ -28,82 +39,63 @@ const TYPE_LABELS: Record<string, string> = {
   http: "HTTP",
 };
 
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 72;
-
-export function StepNodeSVG({ step, status, x, y }: StepNodeProps) {
-  const colors = STATUS_COLORS[status];
+function StepNodeComponent({ data }: NodeProps<StepNodeType>) {
+  const { step, status } = data;
+  const colors = TYPE_COLORS[step.type] ?? TYPE_COLORS.llm;
+  const borderClass = STATUS_BORDER[status];
   const icon = STATUS_ICON[status];
   const typeLabel = TYPE_LABELS[step.type] ?? step.type;
 
-  // Extract data flow info
-  const inputVars = (step.config.input_vars as string[]) ?? [];
-  const inputKey = step.config.input_key as string | undefined;
-  const outputVar =
-    (step.config.output_var as string) ??
-    (step.config.output_key as string) ??
-    "";
-  const inputs = inputVars.length > 0 ? inputVars : inputKey ? [inputKey] : [];
+  const model = step.type === "llm" ? (step.config.model as string) : null;
 
   return (
-    <g className={status === "running" ? "node-pulse" : ""}>
-      <rect
-        x={x}
-        y={y}
-        width={NODE_WIDTH}
-        height={NODE_HEIGHT}
-        rx={8}
-        ry={8}
-        fill={colors.bg}
-        stroke={colors.border}
-        strokeWidth={2.5}
+    <div
+      className={`
+        ${colors.bg} ${borderClass} border-2 rounded-lg px-4 py-3 min-w-[180px]
+        shadow-lg shadow-black/20
+        ${status === "running" ? "node-running" : ""}
+      `}
+    >
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="!bg-slate-500 !border-slate-400 !w-2 !h-2"
       />
-      {/* Step ID */}
-      <text
-        x={x + 12}
-        y={y + 22}
-        fontSize={13}
-        fontWeight={600}
-        fill="#1f2937"
-      >
-        {step.id}
-      </text>
-      {/* Type badge */}
-      <text x={x + 12} y={y + 40} fontSize={11} fill="#6b7280">
-        {typeLabel}
-      </text>
-      {/* Status icon */}
-      {icon && (
-        <text
-          x={x + NODE_WIDTH - 24}
-          y={y + 26}
-          fontSize={18}
-          fill={colors.border}
-          fontWeight={700}
-          textAnchor="middle"
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <span className="text-sm font-semibold text-slate-100 truncate">
+          {step.id}
+        </span>
+        {icon && (
+          <span
+            className={`text-sm font-bold ${
+              status === "complete"
+                ? "text-emerald-400"
+                : status === "failed"
+                  ? "text-red-400"
+                  : "text-blue-400"
+            }`}
+          >
+            {icon}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <span
+          className={`${colors.badge} text-white text-[10px] font-medium px-1.5 py-0.5 rounded`}
         >
-          {icon}
-        </text>
-      )}
-      {/* Data flow labels */}
-      {inputs.length > 0 && (
-        <text x={x + 12} y={y + 56} fontSize={9} fill="#9ca3af">
-          in: {inputs.join(", ")}
-        </text>
-      )}
-      {outputVar && (
-        <text
-          x={x + NODE_WIDTH - 12}
-          y={y + 56}
-          fontSize={9}
-          fill="#9ca3af"
-          textAnchor="end"
-        >
-          out: {outputVar}
-        </text>
-      )}
-    </g>
+          {typeLabel}
+        </span>
+        {model && (
+          <span className={`${colors.text} text-[10px]`}>{model}</span>
+        )}
+      </div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="!bg-slate-500 !border-slate-400 !w-2 !h-2"
+      />
+    </div>
   );
 }
 
-export { NODE_WIDTH, NODE_HEIGHT };
+export default memo(StepNodeComponent);
