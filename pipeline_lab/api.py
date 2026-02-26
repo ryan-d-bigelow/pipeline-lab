@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
 from pipeline_lab.config import PipelineConfig, load_pipeline_config
-from pipeline_lab.executor import execute_pipeline
+from pipeline_lab.executor import execute_pipeline, execute_pipeline_streaming
 from pipeline_lab.models import PipelineListItem, RunRecord, RunResponse
 from pipeline_lab.store import (
     create_run,
@@ -56,6 +62,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ---- Pipeline CRUD ---------------------------------------------------------
 
@@ -64,6 +77,15 @@ app = FastAPI(
 def list_pipelines_endpoint() -> list[PipelineListItem]:
     """List all registered pipelines."""
     return list_pipelines()
+
+
+@app.get("/pipelines/{name}/config")
+def get_pipeline_config_endpoint(name: str) -> dict[str, Any]:
+    """Get full pipeline config (for frontend DAG rendering)."""
+    config = get_pipeline(name)
+    if config is None:
+        raise HTTPException(status_code=404, detail=f"Pipeline '{name}' not found")
+    return config.model_dump()
 
 
 @app.post("/pipelines")
@@ -104,6 +126,65 @@ def run_pipeline_endpoint(name: str, payload: dict[str, Any]) -> RunResponse:
         output=result.get("output", {}),
         errors=result.get("errors", []),
     )
+
+
+class StreamRunRequest(BaseModel):
+    """Request body for the SSE streaming run endpoint."""
+
+    user_input: str = ""
+
+
+@app.post("/pipelines/{name}/run/stream")
+async def stream_run(name: str, body: StreamRunRequest) -> StreamingResponse:
+    """SSE endpoint: trigger a run and stream status events per step."""
+    config = get_pipeline(name)
+    if config is None:
+        raise HTTPException(status_code=404, detail=f"Pipeline '{name}' not found")
+
+    run_id = str(uuid.uuid4())
+    input_data: dict[str, Any] = {"user_input": body.user_input}
+
+    async def event_stream() -> AsyncIterator[str]:
+        yield _sse({"event": "run_started", "payload": {"run_id": run_id}})
+
+        try:
+            result = await asyncio.to_thread(
+                execute_pipeline_streaming, config, input_data, run_id
+            )
+            # Yield per-step completions
+            for step_event in result.get("step_events", []):
+                yield _sse({"event": "step_complete", "payload": step_event})
+
+            # Persist
+            create_run(run_id, name, input_data)
+            if result["status"] == "completed":
+                update_run(run_id, status="completed", output=result["output"])
+            else:
+                update_run(
+                    run_id, status="failed", error="; ".join(result.get("errors", []))
+                )
+
+            yield _sse({
+                "event": "run_complete",
+                "payload": {
+                    "run_id": run_id,
+                    "status": result["status"],
+                    "output": result["output"],
+                    "errors": result.get("errors", []),
+                },
+            })
+        except Exception as exc:
+            yield _sse({
+                "event": "error",
+                "payload": {"run_id": run_id, "error": str(exc)},
+            })
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+def _sse(data: dict[str, Any]) -> str:
+    """Format a dict as an SSE data line."""
+    return f"data: {json.dumps(data)}\n\n"
 
 
 @app.get("/runs/{run_id}", response_model=RunResponse)

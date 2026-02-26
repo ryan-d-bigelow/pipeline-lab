@@ -120,3 +120,51 @@ def execute_pipeline(
         "output": result.get("data", {}),
         "errors": errors,
     }
+
+
+def execute_pipeline_streaming(
+    config: PipelineConfig,
+    input_data: dict[str, Any],
+    run_id: str | None = None,
+) -> dict[str, Any]:
+    """Execute a pipeline and collect per-step events for SSE streaming.
+
+    Uses LangGraph's ``stream`` to yield incremental updates per node.
+    Returns the same shape as ``execute_pipeline`` plus a ``step_events`` list.
+    """
+    graph = build_graph(config)
+    if run_id is None:
+        run_id = str(uuid.uuid4())
+
+    initial_state: dict[str, Any] = {
+        "data": input_data,
+        "run_id": run_id,
+        "pipeline_name": config.name,
+        "errors": [],
+    }
+
+    step_events: list[dict[str, Any]] = []
+    final_data: dict[str, Any] = dict(input_data)
+    all_errors: list[str] = []
+
+    for event in graph.stream(initial_state):
+        # LangGraph stream yields {node_name: node_output} dicts
+        for step_id, output in event.items():
+            if isinstance(output, dict):
+                step_data = output.get("data", {})
+                step_errors = output.get("errors", [])
+                final_data.update(step_data)
+                all_errors.extend(step_errors)
+                step_events.append({
+                    "step_id": step_id,
+                    "output": step_data,
+                    "errors": step_errors,
+                })
+
+    return {
+        "run_id": run_id,
+        "status": "failed" if all_errors else "completed",
+        "output": final_data,
+        "errors": all_errors,
+        "step_events": step_events,
+    }

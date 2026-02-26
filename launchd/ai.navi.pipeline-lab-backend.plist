@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ai.navi.pipeline-lab-backend</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/naviagent/Projects/pipeline-lab/.venv/bin/uvicorn</string>
+    <string>pipeline_lab.api:app</string>
+    <string>--host</string>
+    <string>0.0.0.0</string>
+    <string>--port</string>
+    <string>8001</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/naviagent/Projects/pipeline-lab</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>OPENAI_API_KEY</key>
+    <string>USE_SYSTEM_KEYCHAIN_OR_SET_ME</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/pipeline-lab-backend.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/pipeline-lab-backend-err.log</string>
+</dict>
+</plist>

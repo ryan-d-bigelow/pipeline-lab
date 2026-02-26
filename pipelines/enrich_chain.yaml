@@ -1,0 +1,26 @@
+name: "enrich_chain"
+description: "User input → LLM enrichment → LLM synthesis → store"
+steps:
+  - id: "task1_enrich"
+    type: "llm"
+    config:
+      model: "gpt-4o-mini"
+      prompt_file: "prompts/enrich.md"
+      input_vars: ["user_input"]
+      output_var: "enriched_output"
+
+  - id: "task2_synthesize"
+    type: "llm"
+    depends_on: ["task1_enrich"]
+    config:
+      model: "gpt-4o-mini"
+      prompt_file: "prompts/synthesize.md"
+      input_vars: ["user_input", "enriched_output"]
+      output_var: "final_result"
+
+  - id: "save_result"
+    type: "db"
+    depends_on: ["task2_synthesize"]
+    config:
+      table: "enrich_results"
+      data_keys: ["user_input", "enriched_output", "final_result"]

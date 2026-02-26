@@ -1,0 +1,259 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface-2: #242734;
+  --border: #2e3140;
+  --text: #e4e5e9;
+  --text-muted: #8b8d97;
+  --accent: #3b82f6;
+  --accent-dim: #1d4ed8;
+  --success: #22c55e;
+  --error: #ef4444;
+  --font: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.app-header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  gap: 0;
+}
+
+/* ---- Pipeline Graph ---- */
+
+.graph-container {
+  padding: 24px;
+  overflow: auto;
+}
+
+.graph-container h3 {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.graph-container svg {
+  display: block;
+}
+
+.graph-placeholder {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Node pulse animation for running steps */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.node-pulse rect {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ---- Run Panel ---- */
+
+.run-panel {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  padding: 24px;
+  overflow-y: auto;
+  max-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-section label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.input-section select,
+.input-section textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  resize: vertical;
+}
+
+.input-section select:focus,
+.input-section textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.input-section button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.input-section button:hover:not(:disabled) {
+  background: var(--accent-dim);
+}
+
+.input-section button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- Results ---- */
+
+.results-section h3,
+.run-result h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.step-output-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.step-output-header {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+}
+
+.step-output-body {
+  padding: 10px 12px;
+}
+
+.output-entry {
+  margin-bottom: 6px;
+}
+
+.output-key {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.output-value {
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.run-result {
+  padding: 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.run-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.run-meta code {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* ---- Errors ---- */
+
+.error-banner {
+  background: #451a1a;
+  border: 1px solid var(--error);
+  color: #fca5a5;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.error-list {
+  margin-top: 8px;
+}
+
+.error-item {
+  font-size: 12px;
+  color: #fca5a5;
+  padding: 4px 0;
+}
