@@ -5,11 +5,11 @@ interface RunHistoryProps {
   onSelectRun: (run: RunRecord) => void;
 }
 
-const STATUS_BADGE: Record<RunStatus, { color: string; label: string }> = {
-  pending: { color: "bg-yellow-600", label: "pending" },
-  running: { color: "bg-blue-600", label: "running" },
-  completed: { color: "bg-emerald-600", label: "done" },
-  failed: { color: "bg-red-600", label: "failed" },
+const STATUS_CONFIG: Record<RunStatus, { color: string; label: string }> = {
+  pending: { color: 'var(--amber)', label: 'pending' },
+  running: { color: 'var(--amber)', label: 'running' },
+  completed: { color: 'var(--phosphor)', label: 'done' },
+  failed: { color: 'var(--signal-red)', label: 'failed' },
 };
 
 function formatTime(iso: string): string {
@@ -23,31 +23,58 @@ function formatTime(iso: string): string {
 export default function RunHistory({ runs, onSelectRun }: RunHistoryProps) {
   if (runs.length === 0) {
     return (
-      <div className="text-xs text-slate-500 py-2">No runs yet</div>
+      <div style={{ fontSize: 11, color: 'var(--text-dim)', padding: '4px 0' }}>
+        No signals recorded
+      </div>
     );
   }
 
   return (
-    <div className="space-y-1 max-h-[240px] overflow-y-auto">
+    <div style={{ maxHeight: 240, overflowY: 'auto' }}>
       {runs.map((run) => {
-        const badge = STATUS_BADGE[run.status];
+        const cfg = STATUS_CONFIG[run.status];
         return (
           <button
             key={run.id}
             onClick={() => onSelectRun(run)}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded
-                       hover:bg-slate-700/50 transition-colors text-left group"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '6px 8px',
+              border: 'none',
+              borderLeft: `3px solid ${cfg.color}`,
+              background: 'transparent',
+              cursor: 'pointer',
+              textAlign: 'left',
+              fontFamily: 'var(--font-mono)',
+              marginBottom: 2,
+              transition: 'background 0.1s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--surface-raised)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
           >
-            <span
-              className={`${badge.color} text-white text-[9px] font-medium
-                         px-1.5 py-0.5 rounded shrink-0`}
-            >
-              {badge.label}
+            <span style={{ fontSize: 9, color: cfg.color, fontWeight: 500, minWidth: 44 }}>
+              ● {cfg.label}
             </span>
-            <span className="text-xs text-slate-300 truncate flex-1">
+            <span
+              style={{
+                fontSize: 11,
+                color: 'var(--text-primary)',
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {run.pipeline_name}
             </span>
-            <span className="text-[10px] text-slate-500 shrink-0">
+            <span style={{ fontSize: 10, color: 'var(--text-dim)', flexShrink: 0 }}>
               {formatTime(run.created_at)}
             </span>
           </button>

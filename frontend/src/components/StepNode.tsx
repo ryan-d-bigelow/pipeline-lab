@@ -11,88 +11,102 @@ export interface StepNodeData extends Record<string, unknown> {
 
 type StepNodeType = Node<StepNodeData, "stepNode">;
 
-const TYPE_COLORS: Record<string, { bg: string; badge: string; text: string }> = {
-  llm: { bg: "bg-blue-950", badge: "bg-blue-600", text: "text-blue-300" },
-  transform: { bg: "bg-purple-950", badge: "bg-purple-600", text: "text-purple-300" },
-  db: { bg: "bg-emerald-950", badge: "bg-emerald-600", text: "text-emerald-300" },
-  http: { bg: "bg-orange-950", badge: "bg-orange-600", text: "text-orange-300" },
+const TYPE_LABELS: Record<string, string> = {
+  llm: '◈ LLM',
+  transform: '⟳ XFORM',
+  db: '▣ STORE',
+  http: '↗ HTTP',
+};
+
+const STATUS_LABEL: Record<StepStatus, { text: string; color: string }> = {
+  idle: { text: '[idle]', color: 'var(--text-dim)' },
+  running: { text: '[EXEC]', color: 'var(--amber)' },
+  complete: { text: '[OK]', color: 'var(--phosphor)' },
+  failed: { text: '[ERR]', color: 'var(--signal-red)' },
 };
 
 const STATUS_BORDER: Record<StepStatus, string> = {
-  idle: "border-slate-600",
-  running: "border-blue-500",
-  complete: "border-emerald-500",
-  failed: "border-red-500",
+  idle: 'var(--border)',
+  running: 'var(--amber)',
+  complete: 'var(--phosphor)',
+  failed: 'var(--signal-red)',
 };
 
-const STATUS_ICON: Record<StepStatus, string> = {
-  idle: "",
-  running: "⟳",
-  complete: "✓",
-  failed: "✗",
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  llm: "LLM",
-  transform: "Transform",
-  db: "Database",
-  http: "HTTP",
+const HANDLE_COLORS: Record<string, string> = {
+  llm: '#3b82f6',
+  transform: '#a855f7',
+  db: '#10b981',
+  http: '#f97316',
 };
 
 function StepNodeComponent({ data }: NodeProps<StepNodeType>) {
   const { step, status } = data;
-  const colors = TYPE_COLORS[step.type] ?? TYPE_COLORS.llm;
-  const borderClass = STATUS_BORDER[status];
-  const icon = STATUS_ICON[status];
   const typeLabel = TYPE_LABELS[step.type] ?? step.type;
-
+  const statusCfg = STATUS_LABEL[status];
+  const borderColor = STATUS_BORDER[status];
+  const handleColor = HANDLE_COLORS[step.type] ?? 'var(--border-bright)';
   const model = step.type === "llm" ? (step.config.model as string) : null;
+
+  const nodeClass = status === 'running' ? 'node-running' : status === 'complete' ? 'node-complete' : '';
 
   return (
     <div
-      className={`
-        ${colors.bg} ${borderClass} border-2 rounded-lg px-4 py-3 min-w-[180px]
-        shadow-lg shadow-black/20
-        ${status === "running" ? "node-running" : ""}
-      `}
+      className={nodeClass}
+      style={{
+        background: status === 'complete'
+          ? 'rgba(0, 255, 148, 0.03)'
+          : 'var(--surface)',
+        border: `1px solid ${borderColor}`,
+        borderRadius: 0,
+        padding: '10px 14px',
+        minWidth: 200,
+        fontFamily: 'var(--font-mono)',
+      }}
     >
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-slate-500 !border-slate-400 !w-2 !h-2"
+        style={{
+          width: 4,
+          height: 4,
+          borderRadius: 0,
+          background: handleColor,
+          border: 'none',
+        }}
       />
-      <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="text-sm font-semibold text-slate-100 truncate">
-          {step.id}
-        </span>
-        {icon && (
-          <span
-            className={`text-sm font-bold ${
-              status === "complete"
-                ? "text-emerald-400"
-                : status === "failed"
-                  ? "text-red-400"
-                  : "text-blue-400"
-            }`}
-          >
-            {icon}
-          </span>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <span
-          className={`${colors.badge} text-white text-[10px] font-medium px-1.5 py-0.5 rounded`}
-        >
+
+      {/* Row 1: type badge + status */}
+      <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+        <span style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
           {typeLabel}
         </span>
-        {model && (
-          <span className={`${colors.text} text-[10px]`}>{model}</span>
-        )}
+        <span style={{ fontSize: 10, color: statusCfg.color, fontWeight: 500 }}>
+          {statusCfg.text}
+        </span>
       </div>
+
+      {/* Row 2: step ID */}
+      <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, marginBottom: model ? 4 : 0 }}>
+        {step.id}
+      </div>
+
+      {/* Row 3: model (if LLM) */}
+      {model && (
+        <div style={{ fontSize: 10, color: 'var(--text-dim)' }}>
+          {model}
+        </div>
+      )}
+
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-slate-500 !border-slate-400 !w-2 !h-2"
+        style={{
+          width: 4,
+          height: 4,
+          borderRadius: 0,
+          background: handleColor,
+          border: 'none',
+        }}
       />
     </div>
   );

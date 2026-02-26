@@ -8,19 +8,58 @@ interface RightPanelProps {
 
 export default function RightPanel({ config, stepStates }: RightPanelProps) {
   return (
-    <div className="h-full flex flex-col bg-slate-900">
+    <div className="h-full flex flex-col" style={{ background: 'var(--void)' }}>
       {config && (
-        <div className="px-4 py-2 border-b border-slate-700 flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-slate-200">
+        <div
+          className="shrink-0 flex items-center"
+          style={{
+            padding: '12px 20px',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              color: 'var(--phosphor-dim)',
+              textTransform: 'uppercase' as const,
+            }}
+          >
+            SIGNAL FLOW:{' '}
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              color: 'var(--text-primary)',
+              textTransform: 'uppercase' as const,
+              marginLeft: 4,
+            }}
+          >
             {config.name}
-          </h2>
-          <span className="text-xs text-slate-500">{config.description}</span>
-          <span className="text-[10px] text-slate-600 ml-auto">
-            {config.steps.length} steps
+          </span>
+          <span
+            className="ml-auto"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              color: 'var(--text-dim)',
+            }}
+          >
+            [{config.steps.length} steps]
           </span>
         </div>
       )}
-      <div className="flex-1">
+      <div
+        className="flex-1"
+        style={{
+          backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          backgroundColor: 'var(--void)',
+        }}
+      >
         <DagView config={config} stepStates={stepStates} />
       </div>
     </div>

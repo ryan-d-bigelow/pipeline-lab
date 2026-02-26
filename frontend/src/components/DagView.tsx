@@ -1,9 +1,7 @@
 import { useMemo } from "react";
 import {
   ReactFlow,
-  Background,
   Controls,
-  BackgroundVariant,
 } from "@xyflow/react";
 import type { Node, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -82,7 +80,6 @@ function buildLayout(config: PipelineConfig, stepStates: Record<string, StepStat
         source: dep,
         target: step.id,
         animated: stepStates[dep]?.status === "running",
-        style: { stroke: "#64748b", strokeWidth: 2 },
       });
     }
   }
@@ -104,10 +101,15 @@ export default function DagView({ config, stepStates }: DagViewProps) {
     return buildLayout(config, stepStates);
   }, [config, stepStates]);
 
+  const isAnyRunning = Object.values(stepStates).some((s) => s.status === "running");
+
   if (!config) {
     return (
-      <div className="flex items-center justify-center h-full text-slate-500 text-sm">
-        Select a pipeline to view its graph
+      <div
+        className="flex items-center justify-center h-full"
+        style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '0.08em' }}
+      >
+        AWAITING SIGNAL...
       </div>
     );
   }
@@ -117,6 +119,10 @@ export default function DagView({ config, stepStates }: DagViewProps) {
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
+      defaultEdgeOptions={{
+        style: { stroke: 'var(--border-bright)', strokeWidth: 2 },
+        animated: isAnyRunning,
+      }}
       fitView
       fitViewOptions={{ padding: 0.3 }}
       proOptions={{ hideAttribution: true }}
@@ -128,7 +134,6 @@ export default function DagView({ config, stepStates }: DagViewProps) {
       panOnDrag
       zoomOnScroll
     >
-      <Background variant={BackgroundVariant.Dots} color="#334155" gap={20} size={1} />
       <Controls showInteractive={false} />
     </ReactFlow>
   );

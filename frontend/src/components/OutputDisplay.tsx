@@ -8,9 +8,26 @@ interface OutputDisplayProps {
 export default function OutputDisplay({ runResult, error }: OutputDisplayProps) {
   if (error) {
     return (
-      <div className="bg-red-950/50 border border-red-800 rounded-md px-3 py-2">
-        <p className="text-xs font-medium text-red-400 mb-1">Error</p>
-        <p className="text-xs text-red-300">{error}</p>
+      <div
+        style={{
+          border: '1px solid var(--signal-red)',
+          padding: '10px 12px',
+          background: 'rgba(255, 59, 92, 0.05)',
+        }}
+      >
+        <p style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 10,
+          color: 'var(--signal-red)',
+          marginBottom: 4,
+          letterSpacing: '0.08em',
+          margin: 0,
+        }}>
+          ERROR
+        </p>
+        <p style={{ fontSize: 11, color: 'var(--signal-red)', margin: '4px 0 0 0', opacity: 0.8 }}>
+          {error}
+        </p>
       </div>
     );
   }
@@ -20,47 +37,78 @@ export default function OutputDisplay({ runResult, error }: OutputDisplayProps) 
   const isCompleted = runResult.status === "completed";
   const output = runResult.output;
 
-  // Find the "main" output — the last non-trivial string value
   const outputEntries = Object.entries(output).filter(
     ([, v]) => typeof v === "string" && (v as string).length > 0,
   );
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
+    <div>
+      {/* Status + run ID */}
+      <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
         <span
-          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-            isCompleted
-              ? "bg-emerald-600 text-white"
-              : "bg-red-600 text-white"
-          }`}
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 10,
+            letterSpacing: '0.08em',
+            color: isCompleted ? 'var(--phosphor)' : 'var(--signal-red)',
+          }}
         >
-          {isCompleted ? "completed" : "failed"}
+          [{isCompleted ? 'OK' : 'ERR'}]
         </span>
-        <span className="text-[10px] text-slate-500 font-mono">
+        <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>
           {runResult.run_id.slice(0, 8)}
         </span>
       </div>
 
+      {/* Errors */}
       {runResult.errors.length > 0 && (
-        <div className="bg-red-950/30 border border-red-900 rounded-md px-3 py-2 space-y-1">
+        <div
+          style={{
+            border: '1px solid var(--signal-red)',
+            padding: '8px 12px',
+            marginBottom: 8,
+            background: 'rgba(255, 59, 92, 0.05)',
+          }}
+        >
           {runResult.errors.map((e, i) => (
-            <p key={i} className="text-xs text-red-400">
+            <p key={i} style={{ fontSize: 11, color: 'var(--signal-red)', margin: i > 0 ? '4px 0 0 0' : 0 }}>
               {e}
             </p>
           ))}
         </div>
       )}
 
+      {/* Output entries */}
       {outputEntries.length > 0 && (
-        <div className="space-y-2">
+        <div>
           {outputEntries.map(([key, value]) => (
-            <div key={key}>
-              <p className="text-[10px] font-medium text-slate-400 mb-0.5">
+            <div key={key} style={{ marginBottom: 8 }}>
+              <p style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 10,
+                color: 'var(--text-dim)',
+                letterSpacing: '0.06em',
+                marginBottom: 4,
+                margin: '0 0 4px 0',
+              }}>
                 {key}
               </p>
-              <div className="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 max-h-[200px] overflow-y-auto">
-                <p className="text-xs text-slate-200 whitespace-pre-wrap">
+              <div
+                style={{
+                  background: 'var(--void)',
+                  border: '1px solid var(--border)',
+                  padding: '10px 12px',
+                  maxHeight: 200,
+                  overflowY: 'auto',
+                }}
+              >
+                <p style={{
+                  fontSize: 11,
+                  color: 'var(--text-primary)',
+                  whiteSpace: 'pre-wrap',
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}>
                   {String(value)}
                 </p>
               </div>

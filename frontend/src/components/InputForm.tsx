@@ -14,13 +14,7 @@ export default function InputForm({
   onRun,
 }: InputFormProps) {
   return (
-    <div className="space-y-2">
-      <label
-        htmlFor="user-input"
-        className="block text-xs font-medium text-slate-400"
-      >
-        Input
-      </label>
+    <div>
       <textarea
         id="user-input"
         value={userInput}
@@ -31,31 +25,76 @@ export default function InputForm({
             onRun();
           }
         }}
-        placeholder="Enter your input text..."
+        placeholder="Enter input signal..."
         rows={4}
         disabled={isRunning}
-        className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2
-                   text-sm text-slate-100 placeholder-slate-500 resize-none
-                   focus:outline-none focus:ring-1 focus:ring-blue-500
-                   disabled:opacity-50"
+        style={{
+          width: '100%',
+          background: 'var(--void)',
+          border: '1px solid var(--border)',
+          borderRadius: 0,
+          padding: '10px 12px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12,
+          color: 'var(--text-primary)',
+          resize: 'none',
+          outline: 'none',
+          caretColor: 'var(--phosphor)',
+          opacity: isRunning ? 0.4 : 1,
+          boxSizing: 'border-box',
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = 'var(--border-bright)';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = 'var(--border)';
+        }}
       />
+
       <button
         onClick={onRun}
         disabled={disabled}
-        className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600
-                   disabled:cursor-not-allowed text-white text-sm font-medium
-                   py-2 px-4 rounded-md transition-colors"
+        className={isRunning ? 'btn-executing' : ''}
+        style={{
+          width: '100%',
+          marginTop: 8,
+          padding: '10px 0',
+          border: isRunning ? '1px solid var(--amber)' : '1px solid var(--phosphor-dim)',
+          borderRadius: 0,
+          background: 'transparent',
+          fontFamily: 'var(--font-display)',
+          fontSize: 12,
+          letterSpacing: '0.1em',
+          color: isRunning ? 'var(--amber)' : 'var(--phosphor)',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          opacity: disabled && !isRunning ? 0.3 : 1,
+          transition: 'all 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled) {
+            e.currentTarget.style.background = 'var(--phosphor)';
+            e.currentTarget.style.color = '#000';
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.color = isRunning ? 'var(--amber)' : 'var(--phosphor)';
+        }}
       >
-        {isRunning ? (
-          <span className="flex items-center justify-center gap-2">
-            <span className="animate-spin text-xs">⟳</span>
-            Running...
-          </span>
-        ) : (
-          "Run Pipeline"
-        )}
+        {isRunning ? '◈ EXECUTING...' : '▶ EXECUTE'}
       </button>
-      <p className="text-[10px] text-slate-500 text-center">⌘ + Enter to run</p>
+
+      <div
+        style={{
+          marginTop: 6,
+          textAlign: 'center',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10,
+          color: 'var(--text-dim)',
+        }}
+      >
+        ⌘+ENTER
+      </div>
     </div>
   );
 }

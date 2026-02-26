@@ -15,20 +15,32 @@ export default function PipelineSelector({
 }: PipelineSelectorProps) {
   return (
     <div>
-      <label
-        htmlFor="pipeline-select"
-        className="block text-xs font-medium text-slate-400 mb-1"
-      >
-        Pipeline
-      </label>
       <select
         id="pipeline-select"
         value={selectedName}
         onChange={(e) => onSelect(e.target.value)}
         disabled={disabled}
-        className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2
-                   text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500
-                   disabled:opacity-50"
+        style={{
+          width: '100%',
+          background: 'var(--void)',
+          border: '1px solid var(--border)',
+          borderRadius: 0,
+          padding: '8px 12px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12,
+          color: 'var(--text-primary)',
+          outline: 'none',
+          cursor: 'pointer',
+          appearance: 'none' as const,
+          WebkitAppearance: 'none' as const,
+          opacity: disabled ? 0.4 : 1,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = 'var(--phosphor-dim)';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = 'var(--border)';
+        }}
       >
         {pipelines.map((p) => (
           <option key={p.name} value={p.name}>

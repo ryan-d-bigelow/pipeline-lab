@@ -2,9 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --void: #050507;
+  --surface: #0c0e12;
+  --surface-raised: #141820;
+  --border: #1e2530;
+  --border-bright: #2a3545;
+  --phosphor: #00ff94;
+  --phosphor-dim: #00a85a;
+  --phosphor-glow: rgba(0, 255, 148, 0.15);
+  --amber: #ffb800;
+  --amber-glow: rgba(255, 184, 0, 0.15);
+  --signal-red: #ff3b5c;
+  --text-primary: #e8edf4;
+  --text-secondary: #6b7a8d;
+  --text-dim: #3d4a5c;
+
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Share Tech Mono', monospace;
+}
+
 @layer base {
   body {
-    @apply bg-slate-900 text-slate-100 font-sans m-0;
+    background: var(--void);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin: 0;
   }
 
   #root {
@@ -12,17 +36,99 @@
   }
 }
 
-/* React Flow overrides for dark theme */
+/* Selection highlight */
+::selection {
+  background: var(--phosphor-glow);
+  color: var(--phosphor);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--phosphor-dim);
+}
+
+/* ── Animations ── */
+
+/* Blinking cursor for header */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Phosphor node glow pulse */
+@keyframes phosphor-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--phosphor-glow); }
+  50% { box-shadow: 0 0 24px var(--phosphor-glow), 0 0 48px var(--phosphor-glow); }
+}
+.node-complete {
+  animation: phosphor-pulse 3s ease-in-out infinite;
+}
+
+/* Amber running pulse */
+@keyframes amber-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--amber-glow); border-color: var(--amber); }
+  50% { box-shadow: 0 0 20px var(--amber-glow), 0 0 40px var(--amber-glow); border-color: #ffd040; }
+}
+.node-running {
+  animation: amber-pulse 1.5s ease-in-out infinite;
+}
+
+/* Run button active state */
+@keyframes execute-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.btn-executing {
+  animation: execute-pulse 1s ease-in-out infinite;
+}
+
+/* ── React Flow Overrides ── */
+
 .react-flow__background {
-  background-color: transparent !important;
+  display: none !important;
+}
+
+.react-flow__edge-path {
+  stroke: var(--border-bright);
+  stroke-width: 2;
+}
+
+.react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 0 !important;
+}
+
+.react-flow__controls {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
 }
 
 .react-flow__controls button {
-  @apply bg-slate-700 border-slate-600 text-slate-300;
+  background: var(--surface-raised) !important;
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 0 !important;
 }
 
 .react-flow__controls button:hover {
-  @apply bg-slate-600;
+  background: var(--border) !important;
 }
 
 .react-flow__controls button svg {
@@ -31,31 +137,4 @@
 
 .react-flow__attribution {
   display: none !important;
-}
-
-/* Pulse animation for running nodes */
-@keyframes node-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
-}
-
-.node-running {
-  animation: node-pulse 2s ease-in-out infinite;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  @apply w-1.5;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-600 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-500;
 }
